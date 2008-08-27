@@ -1,4 +1,5 @@
-#Detailed steps for the upgrade to Tapestry 5
+#labels Featured
+Detailed steps for the upgrade to Tapestry 5
 
 = Getting Ready =
 
@@ -86,7 +87,7 @@ Edit the pom.xml and remove all the tapestry 4 dependencies and add Tapestry 5 e
 }}}
 
 
-==  Application deployment descriptor ==
+==  Application Deployment Descriptor ==
 
 Now, the web.xml file needs to be updated
 
@@ -116,9 +117,9 @@ Here are the main changes:
 
 We also removed all jsp referenced in the web.xml. 
 
-== A Little Bit More Work: Pages & Components classes ==
+== A Little Bit More Work: Pages & Components Classes ==
 
-=== Let's Re-org! ===
+=== First, Let's Re-org! ===
 We need to clean-up and refactor a little bit to adhere to Tapestry 5 project layout 
 as defined [http://tapestry.apache.org/tapestry5/guide/project-layout.html here].
 We will end up with the following structure:
@@ -130,3 +131,4 @@ We will end up with the following structure:
 ||Services|| src/main/java/org/appfuse/webapp/services||
 ||Page Templates|| src/main/webapp/ or src/main/webapp/admin ||
 ||Component Templates|| src/main/resources/org/appfuse/webapp/components||
+
