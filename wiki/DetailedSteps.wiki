@@ -1,0 +1,119 @@
+#Detailed steps for the upgrade to Tapestry 5
+
+= Getting Ready =
+
+We will use *AppFuse* version 2.0.2 (http://www.appfuse.org) to kick start our project. 
+ 
+Let's run the following command to get a new basic Tapestry 4 project in the state needed for our migration:
+
+{{{
+
+mvn archetype:create -DarchetypeGroupId=org.appfuse.archetypes \
+                     -DarchetypeArtifactId=appfuse-basic-tapestry \
+                     -DremoteRepositories=http://static.appfuse.org/releases \
+                     -DarchetypeVersion=2.0.2 -DgroupId=org.appfuse -DartifactId=t5-appfuse-demo
+}}}
+
+This base project relies on some built-in tapestry 4 components that needs to be modified. Therefore we need to get those as well. 
+This can be achieved with the following command:
+
+{{{
+mvn appfuse:full-source
+}}}
+
+Now, let's run the initial build to retrieve all dependencies:
+
+{{{
+mvn jetty:run-war -Phsqldb
+}}}
+
+NOTE: We are using HSQLDB as database.
+
+If everything goes well, fire up a browser and point it at this URL: http://localhost:8080
+Login as admin/***** and click around to ensure the Tapestry 4 version is fully functional.
+
+Assuming all went well, we are now ready to start the upgrade to Tapestry 5.
+
+
+= Foundation =
+For users coming from Tapestry 4, here are a few key concepts or changes that need to sink in before moving forward:
+
+  * No more XML configurations
+  * Components (Pages & Components) are no longer abstract
+  * All Components need a class file
+  * T5 promotes convention over configuration(pages, components, mixins and services)
+  * The listener concept is now expanded and replaced with "event handlers"
+  * There is no more "RequestCycle" object 
+  * T5 page life cycle is different
+  * IPropertySelection is gone and can usually be replaced by the Select component
+
+Refer to http://tapestry.apache.org/tapestry5 for an exhaustive list of changes
+
+With the above in mind, we are now ready to start the "surgery", scalpel please :)
+
+= The Easy Part =
+
+== Maven Update ==
+Edit the pom.xml and remove all the tapestry 4 dependencies and add Tapestry 5 equivalent. Here are the main changes:
+
+{{{
+         [snip]
+       <dependency>
+            <groupId>org.apache.tapestry</groupId>
+            <artifactId>tapestry-core</artifactId>
+            <version>${tapestry.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tapestry</groupId>
+            <artifactId>tapestry-spring</artifactId>
+            <version>${tapestry.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tapestry</groupId>
+            <artifactId>tapestry-upload</artifactId>
+            <version>${tapestry.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tapestry</groupId>
+            <artifactId>tapestry-test</artifactId>
+            <version>${tapestry.version}</version>
+            <scope>test</scope>
+        </dependency>
+             ...
+       <web.framework>tapestry5</web.framework>
+       <tapestry.version>5.0.14</tapestry.version>
+         [snip]
+}}}
+
+
+==  Application deployment descriptor ==
+
+Now, the web.xml file needs to be updated
+
+Remove old style tapestry 4 servlet and replace with TapestrySpring filter. 
+Note that we are not using the standard Tapestry filter (TapestryFilter) simply because T5 comes fully integrated with Spring.
+
+Here are the main changes:
+
+{{{
+       ....
+   <display-name>My Tapestry Application</display-name>
+    <context-param>
+        <param-name>tapestry.app-package</param-name>
+        <param-value>org.appfuse.webapp</param-value>
+    </context-param>
+      ....
+    <filter>
+        <filter-name>app</filter-name>
+        <filter-class>org.apache.tapestry5.spring.TapestrySpringFilter</filter-class>
+    </filter>
+      .....
+    <filter-mapping>
+        <filter-name>app</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+}}}
+
+We also removed all jsp referenced in the web.xml. 
+
+== A Little Bit More Work: Pages & Components classes ==
