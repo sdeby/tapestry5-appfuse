@@ -117,3 +117,16 @@ Here are the main changes:
 We also removed all jsp referenced in the web.xml. 
 
 == A Little Bit More Work: Pages & Components classes ==
+
+=== Let's Re-org! ===
+We need to clean-up and refactor a little bit to adhere to Tapestry 5 project layout 
+as defined [http://tapestry.apache.org/tapestry5/guide/project-layout.html here].
+We will end up with the following structure:
+
+|| *Desc.* || *Path* ||
+||Pages || src/main/java/org/appfuse/webapp/pages||
+||Components|| src/main/java/org/appfuse/webapp/components||
+||Mixins|| src/main/java/org/appfuse/webapp/mixins||
+||Services|| src/main/java/org/appfuse/webapp/services||
+||Page Templates|| src/main/webapp/ or src/main/webapp/admin ||
+||Component Templates|| src/main/resources/org/appfuse/webapp/components||
