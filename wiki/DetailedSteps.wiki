@@ -132,3 +132,5 @@ We will end up with the following structure:
 ||Page Templates|| src/main/webapp/ or src/main/webapp/admin ||
 ||Component Templates|| src/main/resources/org/appfuse/webapp/components||
 
+
+ === More to come... ===
