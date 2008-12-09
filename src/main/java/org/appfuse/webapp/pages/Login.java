@@ -1,6 +1,5 @@
 package org.appfuse.webapp.pages;
 
-import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,13 +10,12 @@ import org.apache.tapestry5.annotations.Environmental;
 import org.apache.tapestry5.annotations.IncludeJavaScriptLibrary;
 import org.apache.tapestry5.annotations.Path;
 import org.apache.tapestry5.annotations.Property;
-import org.apache.tapestry5.ioc.Messages;
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.apache.tapestry5.json.JSONObject;
 import org.apache.tapestry5.services.Context;
 import org.apache.tapestry5.services.Request;
 import org.appfuse.Constants;
-import org.slf4j.Logger;
+import org.appfuse.webapp.base.BasePage;
 import org.springframework.security.ui.AbstractProcessingFilter;
 
 /**
@@ -27,13 +25,10 @@ import org.springframework.security.ui.AbstractProcessingFilter;
  * @version $Id$
  */
 @IncludeJavaScriptLibrary("context:scripts/login.js")
-public class Login {
+public class Login extends BasePage {
 
 	private static final String AUTH_FAILED = "error";
 	private static final String SECURITY_URL = "/j_security_check";
-
-	@Inject
-	private Logger logger;
 
 	@Inject
 	private Request request;
@@ -43,9 +38,7 @@ public class Login {
 	@Path("context:images/iconWarning.gif")
 	private Asset iconWarning;
 
-	@Inject
-	private Messages messages;
-
+	
 	@Inject
 	private ComponentResources resources;
 
@@ -59,6 +52,10 @@ public class Login {
 	@Property
 	private String errorMessage = null;
 
+	String onPassiavate() {
+		return errorMessage;
+	}
+
 	void onActivate(String loginError) {
 		if (AUTH_FAILED.equals(loginError)) {
 			this.errorMessage = ((Exception) request
@@ -66,14 +63,10 @@ public class Login {
 					.getAttribute(
 							AbstractProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY))
 					.getMessage();
-			logger.error(String.format("Error while attempting to login: %s",
-					errorMessage));
+			getLogger().error("Error while attempting to login: {}", errorMessage);
 		}
 	}
 
-	String onPassiavate() {
-		return errorMessage;
-	}
 
 	void afterRender() {
 		JSONObject params = new JSONObject();
@@ -83,15 +76,16 @@ public class Login {
 		params.put("requiredPassword", getRequiredPasswordError());
 
 		renderSupport.addScript("initialize(%s);", params);
-
 	}
 
-	public String getSpringSecurityUrl() {
-		return String.format("%s%s", request.getContextPath(), SECURITY_URL);
-	}
 
 	void cleanupRender() {
 		this.errorMessage = null;
+	}
+
+	
+	public String getSpringSecurityUrl() {
+		return String.format("%s%s", request.getContextPath(), SECURITY_URL);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -103,22 +97,23 @@ public class Login {
 		return false;
 	}
 
+	
 	public String getSignup() {
 		String link = resources.createPageLink("Signup", false).toAbsoluteURI();
-		return MessageFormat.format(messages.get("login.signup"), link);
+		return getText("login.signup", link);
 	}
 
 	//~-- Javascript/JSON object helper methods
 	private String getRequiredFieldError(String field) {
-		return MessageFormat.format(messages.get("errors.required"), field);
+		return getText("errors.required", field);
 	}
 
 	private String getRequiredUsernameError() {
-		return getRequiredFieldError(messages.get("label.username"));
+		return getRequiredFieldError(getText("label.username"));
 	}
 
 	private String getRequiredPasswordError() {
-		return getRequiredFieldError(messages.get("label.password"));
+		return getRequiredFieldError(getText("label.password"));
 	}
 
 	private String getPasswordHintLink() {

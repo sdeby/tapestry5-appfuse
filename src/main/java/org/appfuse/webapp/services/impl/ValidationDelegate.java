@@ -33,7 +33,7 @@ public class ValidationDelegate implements ValidationDecorator {
 	public void insideField(Field field) {
 
 		if (inError(field)) {
-			if (field.isRequired() && isMissing(field)) {
+			if (isMissing(field)) {
 				addErrorClassToCurrentElement("fieldMissing");
 				return;
 			}
@@ -80,21 +80,24 @@ public class ValidationDelegate implements ValidationDecorator {
 	public void afterField(Field field) {
 	}
 
+	
+	private ValidationTracker getTracker() {
+		return environment.peekRequired(ValidationTracker.class);
+	}
+	
 	private boolean inError(Field field) {
-		ValidationTracker tracker = environment
-				.peekRequired(ValidationTracker.class);
-
-		return tracker.inError(field);
+		return getTracker().inError(field);
 	}
 
 	private String getError(Field field) {
-		ValidationTracker tracker = environment
-				.peekRequired(ValidationTracker.class);
-		return tracker.getError(field);
+		return getTracker().getError(field);
 	}
 
 	private boolean isMissing(Field field) {
-		return true; // FIXME: Determine if field wasn't populated
+		String value = getTracker().getInput(field);
+		
+		boolean fiedIsBlank = value == null || value.trim().length() == 0;
+		return (field.isRequired() && fiedIsBlank);		
 	}
 
 	private void addErrorClassToCurrentElement(String errorClass) {

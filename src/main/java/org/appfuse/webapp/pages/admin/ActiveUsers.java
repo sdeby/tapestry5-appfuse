@@ -8,12 +8,11 @@ import org.apache.tapestry5.annotations.Path;
 import org.apache.tapestry5.annotations.Property;
 import org.apache.tapestry5.annotations.Retain;
 import org.apache.tapestry5.beaneditor.BeanModel;
-import org.apache.tapestry5.ioc.Messages;
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.apache.tapestry5.services.BeanModelSource;
 import org.apache.tapestry5.services.Context;
 import org.appfuse.model.User;
-import org.slf4j.Logger;
+import org.appfuse.webapp.base.BasePage;
 
 /**
  * Lists all active users
@@ -22,16 +21,10 @@ import org.slf4j.Logger;
  * @version $Id$
  *
  */
-public class ActiveUsers {
+public class ActiveUsers extends BasePage {
 
-	private final String[] COLUMNS = { "username" };
+	private final static String[] COLUMNS = { "username" };
 
-	@Inject
-	private Logger log;
-	
-	@Inject
-	private Messages messages;
-	
 	@Property
 	@Inject
 	@Path("context:images/arrow_up.png")
@@ -59,12 +52,12 @@ public class ActiveUsers {
 	private Context context;
 
 	{
-		model = beanModelSource.create(User.class, true, resources.getMessages());
+		model = beanModelSource.createDisplayModel(User.class, resources.getMessages());
 		model.include(COLUMNS);
 		model.add("fullname");
 		// Set labels
-		model.get("username").label(messages.get("user.username"));
-		model.get("fullname").label(messages.get("activeUsers.fullName"));
+		model.get("username").label(getText("user.username"));
+		model.get("fullname").label(getText("activeUsers.fullName"));
 	}
 
 	

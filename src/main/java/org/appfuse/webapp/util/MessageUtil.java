@@ -28,4 +28,8 @@ public class MessageUtil {
 		m.appendTail(sb);
 		return sb.toString();
 	}
+	
+	public static String format(String message, Object... args) {
+		return String.format(convert(message), args);
+	}
 }

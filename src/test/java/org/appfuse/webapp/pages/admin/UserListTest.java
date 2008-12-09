@@ -3,10 +3,10 @@ package org.appfuse.webapp.pages.admin;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.appfuse.webapp.pages.BasePageTester;
-import org.testng.Assert;
+import org.appfuse.webapp.base.BasePageTestCase;
+import org.appfuse.webapp.base.BasePageTester;
 
-public class UserListTest extends BasePageTester {
+public class UserListTest extends BasePageTestCase {
  //   private UserList page;
 
 //    @Override

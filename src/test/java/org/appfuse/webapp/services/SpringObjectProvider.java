@@ -39,7 +39,7 @@ public class SpringObjectProvider implements ObjectProvider {
 			AnnotationProvider annotationProvider, ObjectLocator locator) {
 
 		// hack...
-		if (objectType.getName().startsWith("org.apache.tapestry5")) {
+		if (objectType.getName().startsWith("org.apache.tapestry")) {
 			return null;
 		}
 
@@ -51,8 +51,9 @@ public class SpringObjectProvider implements ObjectProvider {
 		Object obj = null;
 
 		try {
-			String[] beanNames = getSpringContext().getBeanNamesForType(
-					objectType);
+			//String[] beanNames = getSpringContext().getBeanNamesForType(objectType);
+			String[] beanNames = getSpringContext().getBeanDefinitionNames();
+		
 
 			if (beanNames.length > 0) {
 				// return first result

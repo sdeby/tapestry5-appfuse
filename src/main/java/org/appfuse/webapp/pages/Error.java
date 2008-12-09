@@ -1,9 +1,10 @@
 package org.appfuse.webapp.pages;
 
-import org.apache.tapestry5.annotations.Property;
-import org.apache.tapestry5.annotations.Persist;
-import org.apache.tapestry5.services.ExceptionReporter;
 import org.apache.tapestry5.PersistenceConstants;
+import org.apache.tapestry5.annotations.Persist;
+import org.apache.tapestry5.annotations.Property;
+import org.apache.tapestry5.services.ExceptionReporter;
+import org.appfuse.webapp.base.BasePage;
 
 /**
  * Customized errror handling page 
@@ -11,7 +12,8 @@ import org.apache.tapestry5.PersistenceConstants;
  * @author Serge Eby
  * @version $Id$
  */
-public class Error implements ExceptionReporter {
+public class Error extends BasePage implements ExceptionReporter {
+	
 	@Property
     @Persist(PersistenceConstants.FLASH)
 	private String error;

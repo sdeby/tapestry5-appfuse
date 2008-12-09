@@ -12,7 +12,7 @@
 	</head>
 
 	<body id="${bodyId}">
-<!--		<t:messagebanner message="page.message" type="page.type"/>-->
+		<t:flash object="flashMessage"/>
 		<t:body />
 	</body>
 </html>

@@ -6,7 +6,7 @@ import org.apache.tapestry5.ioc.annotations.Inject;
 import org.apache.tapestry5.services.Request;
 import org.apache.tapestry5.services.RequestGlobals;
 import org.apache.tapestry5.services.Response;
-import org.slf4j.Logger;
+import org.appfuse.webapp.base.BasePage;
 
 /**
  * Main index page. This also handles 404 errors 
@@ -14,10 +14,8 @@ import org.slf4j.Logger;
  * @author Serge Eby
  * @version $Id$
  */
-public class Index {
+public class Index extends BasePage {
 
-	@Inject
-	private Logger logger;
 
 	@Inject 
 	private RequestGlobals globals;
@@ -43,9 +41,9 @@ public class Index {
 			int index = 0;
 			for (Object obj : context) {
 				index++;
-				logger.debug(String.format("Context #%d =  %s", index, obj.toString()));
+				getLogger().debug(String.format("Context #%d =  %s", index, obj.toString()));
 			}
-			logger.debug("Redirecting to PageNotFound");
+			getLogger().debug("Redirecting to PageNotFound");
 			return NotFound.class;
 		}
 		// Redirect to MainMenu

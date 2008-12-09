@@ -5,8 +5,7 @@ import org.apache.tapestry5.annotations.Path;
 import org.apache.tapestry5.annotations.Property;
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.apache.tapestry5.services.ApplicationGlobals;
-import org.apache.tapestry5.services.Request;
-import org.slf4j.Logger;
+import org.appfuse.webapp.base.BasePage;
 
 import com.opensymphony.oscache.web.ServletCacheAdministrator;
 
@@ -17,10 +16,7 @@ import com.opensymphony.oscache.web.ServletCacheAdministrator;
  * @version $Id$
  *
  */
-public class FlushCache {
-
-	@Inject 
-	private Logger logger;
+public class FlushCache extends BasePage {
 	
 	@Property
 	@Inject
@@ -40,7 +36,7 @@ public class FlushCache {
 	}
 	
 	void beginRender() {
-		logger.debug("Ready to flush the cache");
+		getLogger().debug("Ready to flush the cache");
 		admin.flushAll();
 	}
 	

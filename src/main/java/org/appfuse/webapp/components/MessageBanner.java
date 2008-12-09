@@ -21,7 +21,10 @@ import org.apache.tapestry5.services.ComponentDefaultProvider;
  */
 public class MessageBanner {
 
-
+    public enum MessageType {
+        SUCCESS, ERROR;
+    }
+	
 	private static final String SUCCESS = "success";
 	private static final String ERROR   = "error";
 	

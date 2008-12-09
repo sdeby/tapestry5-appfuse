@@ -52,7 +52,6 @@ public class UserForm implements ClientElement {
 
 
 	  	@Parameter(allowNull = true)
-	  	@Property
 	  	private String from;
 	  	
 	  	@Parameter
@@ -86,7 +85,7 @@ public class UserForm implements ClientElement {
 				   parameters = { "value=user.username","validate=required", "label=message:user.username" })
 		private TextField usernameField;
 
-		
+
 		@Component(id = "password", 			   
 				   parameters = { "value=user.password", "validate=required", })
 		private HashedPasswordField passwordField;
@@ -109,7 +108,7 @@ public class UserForm implements ClientElement {
 		private TextField lastNameField;
 
 		@Component(id = "email", 
-				   parameters = { "value=user.email","validate=required", })
+				   parameters = { "value=user.email","validate=required,email", })
 		private TextField emailField;
 
 		@Component(id = "phoneNumber", 
@@ -147,7 +146,7 @@ public class UserForm implements ClientElement {
 		@Component(parameters = { "event=cancel" })
 		private EventLink cancelTop, cancelBottom;
 
-//      NOTE: Wrapping a button in a eventlink results into 2 attempts to
+//      NOTE: Wrapping a button in an eventlink results into 2 attempts to
 //		delete the user. We will use a submit component instead
 //		@Component(parameters = { "event=delete" })
 //		private EventLink deleteTop, deleteBottom;
@@ -178,6 +177,9 @@ public class UserForm implements ClientElement {
 	        return form.getClientId();
 	    }
 	    
+		public TextField getUsernameField() {
+			return usernameField;
+		}
 	    
 	    Binding defaultObject() {
 	        return defaultProvider.defaultBinding("user", resources);

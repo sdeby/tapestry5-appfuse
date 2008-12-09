@@ -21,6 +21,7 @@ import org.apache.tapestry5.services.MarkupRenderer;
 import org.apache.tapestry5.services.MarkupRendererFilter;
 import org.apache.tapestry5.services.RequestExceptionHandler;
 import org.apache.tapestry5.services.ResponseRenderer;
+import org.apache.tapestry5.upload.services.UploadSymbols;
 import org.appfuse.service.MailEngine;
 import org.appfuse.service.RoleManager;
 import org.appfuse.service.UserManager;
@@ -40,7 +41,7 @@ import org.springframework.mail.SimpleMailMessage;
 public class AppModule {
 	public static void bind(ServiceBinder binder) {
 		// binder.bind(MyServiceInterface.class, MyServiceImpl.class);
-
+		  
 		// Make bind() calls on the binder object to define most IoC
 		// services.
 		// Use service builder methods (example below) when the
@@ -64,6 +65,10 @@ public class AppModule {
 		// on the command line as -Dtapestry.production-mode=false
 		configuration.add(SymbolConstants.PRODUCTION_MODE, "true");
 
+		
+		// Set filesize limit to 2 MB
+		 configuration.add(UploadSymbols.REQUESTSIZE_MAX, "2048000");
+	     configuration.add(UploadSymbols.FILESIZE_MAX, "2048000");
 	}
 	
 ///**
@@ -108,7 +113,6 @@ public class AppModule {
 //		// within the pipeline.
 //		configuration.add("Timing", filter);
 //	}
-
 
 
 	/**
@@ -174,6 +178,5 @@ public class AppModule {
 	            }
 	        };
 	    }
-	
 
 }
