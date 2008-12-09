@@ -1,8 +1,7 @@
-<t:layout title="message:upload.title" heading="message:upload.heading"
-	menu="literal:AdminMenu" xmlns:t="http://tapestry.apache.org/schema/tapestry_5_0_0.xsd">
+<t:layout title="message:upload.title" 
+heading="message:upload.heading" menu="literal:AdminMenu" flash="flashMessage"
+	 xmlns:t="http://tapestry.apache.org/schema/tapestry_5_0_0.xsd">
 
-<!--<t:showvalidationerror/>-->
-	<t:showmessage message="message" />
 	<div class="separator"></div>
 	<t:form t:id="upload" clientValidation="false">
 		<ul>

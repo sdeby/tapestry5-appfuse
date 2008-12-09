@@ -4,14 +4,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.tapestry5.ComponentResources;
-import org.apache.tapestry5.PersistenceConstants;
-import org.apache.tapestry5.annotations.InjectPage;
 import org.apache.tapestry5.annotations.Persist;
 import org.apache.tapestry5.annotations.Property;
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.apache.tapestry5.services.Context;
 import org.apache.tapestry5.services.Request;
-import org.slf4j.Logger;
+import org.appfuse.webapp.base.BasePage;
 
 import com.opensymphony.clickstream.Clickstream;
 
@@ -22,12 +20,9 @@ import com.opensymphony.clickstream.Clickstream;
  * @version $Id$
  *
  */
-public class ClickStreams {
+public class ClickStreams extends BasePage {
 
-	@Inject
-	private Logger logger;
 	
-	@Persist(PersistenceConstants.FLASH)
 	private String showBots = "false";
 	
 	@Inject 
@@ -38,9 +33,6 @@ public class ClickStreams {
 	
 	@Inject
 	private ComponentResources resources;
-	
-	@InjectPage 
-	private ViewStream viewstream;
 	
 	@Persist
 	@Property
@@ -63,27 +55,28 @@ public class ClickStreams {
 	@Property
 	private int index;
 	
+	String onPassivate() {
+		return showBots;	
+	}
+	
 	 void onActivate(String context) {
 			if (context == null) {
 				context = "false";
 			}
 			this.showBots = context;
 			
-		}
+	}
 		
-		String onPassivate() {
-			return showBots;	
-		}
-		
+	
 	@SuppressWarnings("unchecked")
 	void setupRender() {
 		if (clickstreams == null) {
-			logger.debug("Initializing clickstreams object from servlet context");
+			getLogger().debug("Initializing clickstreams object from servlet context");
 			clickstreams = (Map<String,Clickstream>) context.getAttribute("clickstreams");
 			
 		}
 		if (clickstreams == null) {
-			logger.debug("Clickstreams still null !!!!");
+			getLogger().debug("Clickstreams still null !!!!");
 		}
 		
 		

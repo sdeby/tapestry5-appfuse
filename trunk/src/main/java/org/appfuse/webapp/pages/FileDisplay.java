@@ -1,11 +1,10 @@
 package org.appfuse.webapp.pages;
 
+import org.apache.tapestry5.PersistenceConstants;
 import org.apache.tapestry5.annotations.Persist;
 import org.apache.tapestry5.annotations.Property;
-import org.apache.tapestry5.ioc.annotations.Inject;
 import org.apache.tapestry5.upload.services.UploadedFile;
 import org.appfuse.webapp.base.BasePage;
-import org.slf4j.Logger;
 
 /**
 * This class handles the uploading of a file and writing it to
@@ -19,23 +18,20 @@ import org.slf4j.Logger;
 */
 public class FileDisplay extends BasePage {
 	
-	@Inject
-	private Logger logger;
-	
 	@Property
-	@Persist
+	@Persist(PersistenceConstants.FLASH)
 	private UploadedFile file;
 	
 	@Property
-	@Persist
+	@Persist(PersistenceConstants.FLASH)
 	private String name;
 
 	@Property
-	@Persist
+	@Persist(PersistenceConstants.FLASH)
 	private String path;
 	
 	@Property
-	@Persist
+	@Persist(PersistenceConstants.FLASH)
 	private String url;
 	
 	Object initialize(UploadedFile file, String name, String path, String url) {

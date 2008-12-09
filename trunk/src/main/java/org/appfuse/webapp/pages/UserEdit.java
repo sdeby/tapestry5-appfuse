@@ -8,22 +8,22 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.tapestry5.ComponentResources;
-import org.apache.tapestry5.Link;
 import org.apache.tapestry5.annotations.Component;
 import org.apache.tapestry5.annotations.InjectPage;
 import org.apache.tapestry5.annotations.Persist;
 import org.apache.tapestry5.annotations.Property;
 import org.apache.tapestry5.ioc.annotations.Inject;
+import org.apache.tapestry5.services.Request;
 import org.appfuse.Constants;
 import org.appfuse.model.Role;
 import org.appfuse.model.User;
 import org.appfuse.service.UserExistsException;
 import org.appfuse.webapp.base.BasePage;
 import org.appfuse.webapp.components.UserForm;
+import org.appfuse.webapp.data.FlashMessage.Type;
 import org.appfuse.webapp.pages.admin.UserList;
 import org.appfuse.webapp.services.ServiceFacade;
 import org.appfuse.webapp.util.RequestUtil;
-import org.slf4j.Logger;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.AccessDeniedException;
@@ -41,18 +41,19 @@ import org.springframework.security.context.SecurityContextHolder;
  *
  */
 public class UserEdit extends BasePage {
-	@Inject
-	private Logger logger;
 
-	@Persist
 	@Property
 	private User user;
 	
+	private String userId;
+	
 	@Property
-	@Persist
 	private List<String> selectedRoles;
 
 
+	@Inject
+	private Request request;
+	
 	@Property
 	private List<String> userRoles;
 
@@ -70,119 +71,87 @@ public class UserEdit extends BasePage {
 	private MainMenu mainMenu;
 
 
-	@Persist
+	@Persist 
+	@Property
 	private String from;
 
-	@Persist
-	private Link linkBack;
 
 	@Component(id = "edit")
 	private UserForm form;
-	
-	
+
 	private boolean delete = false;
 	
-	public void setUser(User user) {
-		this.user = user;
-	}
-
-
-	public List<String> getUserRoles() {
-		return userRoles;
-	}
-
-	public void setUserRoles(List<String> userRoles) {
-		this.userRoles = userRoles;
-	}
-
-
-	public void setFrom(String from) {
-		this.from = from;
-	}
-
-	public String getFrom() {
-		return from;
-	}
-
-
-	 public boolean isRememberMe() {
-//		 if (user != null && user.getId() == null) {
-//			 return false; // check for add()
-//		 }
-		
-		 AuthenticationTrustResolver resolver = new AuthenticationTrustResolverImpl();
-		 SecurityContext ctx = SecurityContextHolder.getContext();
-		
-		 if (ctx != null) {
-			 Authentication auth = ctx.getAuthentication();
-			 return resolver.isRememberMe(auth);
-		 }
-		 return false;
-	 }
-
-
-	public boolean isCookieLogin() {
-		//return isRememberMe();
-		//FIXME: Somehow the above condition always returns false
-		return true;
-	}
+	private String flashMsg = null;
 
 	
-	void beginRender() {
-		if (user == null) {
-			logger.debug("Initializing user object");
+	 public Object initialize(String from, String userId) {
+		this.from = from;
+		this.userId = userId;
+		return this;
+	}
+	
+	
+	String onPassivate() {
+		return userId;			
+	}
+	
+	void onActivate(String id) {
+		this.userId = id;	
+	}
+	
+
+	void beginRender() {	
+		// if user logged in with remember me, display a warning that they
+		// can't change passwords
+		getLogger().debug("checking for remember me login...");
+		
+		if (isRememberMe()) {
+			// add warning message
+			addFlash(getText("userProfile.cookieLogin"), Type.SUCCESS);
+		}
+	}
+
+	// ~ --- Event Handlers
+	
+	void onPrepare() {
+		
+		if (userId == null) {
+			getLogger().debug("Initializing new user object");
 			user = new User();
-			// Add default role
 			user.addRole(new Role(Constants.USER_ROLE));
 		}
+		else {
+			getLogger().debug("Retrieving existing user");
+			user = serviceFacade.getUserManager().getUser(userId);	
+			user.setConfirmPassword(user.getPassword());
+		}		
 
+		getLogger().debug("This page was activated from: {} " , from);
 		
 		selectedRoles = new ArrayList<String>(user.getRoles().size());
 
 		for (Role role : user.getRoles()) {
-			logger.debug("Adding Role: " + role.getName());
+			getLogger().debug("Adding Role: " + role.getName());
 			selectedRoles.add(role.getName());
 		}
 
-		setUserRoles(selectedRoles);
-		        
-		// if user logged in with remember me, display a warning that they
-		// can't change passwords
-		logger.debug("checking for remember me login...");
-		
-		if (isRememberMe()) {
-			getSession().setAttribute("cookieLogin", "true");
-			// add warning message
-			setMessage(getText("userProfile.cookieLogin"));
-		}
+		//setUserRoles(selectedRoles);
+		userRoles =  selectedRoles;		
 	}
-
-	
-	// ~ --- Event Handlers
-
-	Object onCancel() {
-		logger.debug("Entering 'cancel' method");
-
-		if (getFrom() != null && getFrom().equalsIgnoreCase("list")) {
-			return resources.createPageLink("admin/UserList", false);
-		} else {
-			return resources.createPageLink("MainMenu", false);
-		}
-	}
-
 
 	
 	void onValidateForm() {
-		if (!StringUtils.equals(user.getPassword(), user.getConfirmPassword())) {
-			addError(form.getForm(), form.getConfirmPasswordField(), "errors.twofields", true, 
-					 getMessageText("user.confirmPassword"), getMessageText("user.password"));
+		if (!StringUtils.equals(user.getPassword(), user.getConfirmPassword())) {		
+			flashMsg = getText("errors.twofields", 
+					getText("user.confirmPassword"), getText("user.password"));
+			addFlash(flashMsg, Type.FAILURE);
+			form.recordError(form.getConfirmPasswordField(), flashMsg);
 		}
-	
 	}
 	
 
-	Object onSuccess() throws UserExistsException, IOException {
-		logger.debug("*** entering onSuccess method ***");
+	Object onSuccess() throws UserExistsException, IOException {		
+		getLogger().debug("entering onSuccess method");
 		
 		// Delete Button Clicked
 		if (delete) {
@@ -196,7 +165,7 @@ public class UserEdit extends BasePage {
 		if (selectedRoles != null && !selectedRoles.isEmpty()) {
 			user.getRoles().clear();
 			for (String roleName : selectedRoles) {
-				logger.debug("Adding Role --> " + roleName);
+				getLogger().debug("Adding Role: {} " , roleName);
 				user.addRole(serviceFacade.getRoleManager().getRole(roleName));
 			}
 		}
@@ -204,16 +173,21 @@ public class UserEdit extends BasePage {
 
 		try {
 			user = serviceFacade.getUserManager().saveUser(user);			
-		} catch (AccessDeniedException ade) {
+		} 
+		catch (AccessDeniedException ade) {
 			// thrown by UserSecurityAdvice configured in aop:advisor
 			// userManagerSecurity
-			logger.warn(ade.getMessage());
+			getLogger().warn(ade.getMessage());
 			//getResponse().sendError(HttpServletResponse.SC_FORBIDDEN);
 			//return null;
 			return AccessDenied.class;
-		} catch (UserExistsException e) {
-			addError(form.getForm(), form.getEmailField(), "errors.existing.user", true, 
-					user.getUsername(), user.getEmail());
+		} 
+		catch (UserExistsException e) {
+			flashMsg = getText("errors.existing.user", 
+					                    user.getUsername(), user.getEmail());
+			addFlash(flashMsg, Type.FAILURE);
+			form.recordError(form.getEmailField(), flashMsg);
+			
 			user.setPassword(user.getConfirmPassword());
 			user.setVersion(originalVersion);
 			return null;
@@ -222,50 +196,76 @@ public class UserEdit extends BasePage {
 		if (!form.isFromList()
 				&& user.getUsername().equals(getRequest().getRemoteUser())) {
 			// add success messages
-			mainMenu.addInfo("user.saved", true, user.getFullName());
-			
-			
+			flashMsg = getText("user.saved", user.getFullName());
+			 mainMenu.addFlash(flashMsg, Type.SUCCESS);
 			return mainMenu;
+			
 		} else {
 			// add success messages
 			if (originalVersion == null) {
 				sendNewUserEmail(request, user);
-				userList.addInfo("user.added", true, user.getFullName());
+				flashMsg = getText("user.added", user.getFullName());
+				userList.addFlash(flashMsg, Type.SUCCESS);
 				return userList;
 			} else {
-				addInfo("user.updated.byAdmin", true, user.getFullName());
-				return null; // return to current pages
+				flashMsg = getText("user.updated.byAdmin", user.getFullName());
+				addFlash(flashMsg, Type.SUCCESS);
+				return null; // return to current page
 			}
 		}
 	}
 
 	
+	Object onCancel() {
+		getLogger().debug("Entering 'cancel' method");
+
+		if ("list".equalsIgnoreCase(from)) {
+			return resources.createPageLink("admin/UserList", false);
+		} 
+		else {
+			return resources.createPageLink("MainMenu", false);
+		}
+	}
+
+
 	void onSelectedFromEdit() {
 		delete = true;
 	}
 	
 	Object onDelete() {
-		logger.debug("entered delete method");	
+		getLogger().debug("entered delete method");	
 		// Save full name before deletion
 		String fullName = user.getFullName();
-		serviceFacade.getUserManager().removeUser(user.getId().toString());	
-		userList.addInfo("user.deleted", true, fullName);
-		logger.debug("After deletion.. ready to return userList object");	
+		serviceFacade.getUserManager().removeUser(user.getId().toString());
+		String flashMsg = getText("user.deleted", fullName);
+		userList.addFlash(flashMsg, Type.SUCCESS);
+		getLogger().debug("After deletion.. ready to return userList object");	
 		return userList;
 	}
 
+
+	public boolean isRememberMe() {
+		 AuthenticationTrustResolver resolver = new AuthenticationTrustResolverImpl();
+		 SecurityContext ctx = SecurityContextHolder.getContext();
 		
-	 void cleanupRender() {
-		 //user = null;
-//		 validationError = null;
+		 if (ctx != null) {
+			 Authentication auth = ctx.getAuthentication();
+			 return resolver.isRememberMe(auth);
+		 }
+		 return false;
 	 }
-		
+
+
+	public boolean isCookieLogin() {
+		return isRememberMe();
+	}
+
 
 	// ~ Helper methods
 	private void sendNewUserEmail(HttpServletRequest request, User user) {
 		// Send user an e-mail
-		if (logger.isDebugEnabled()) {
-			logger.debug("Sending user '" + user.getUsername()
+		if (getLogger().isDebugEnabled()) {
+			getLogger().debug("Sending user '" + user.getUsername()
 					+ "' an account information e-mail");
 		}
 
@@ -286,8 +286,7 @@ public class UserEdit extends BasePage {
 		try {
 			serviceFacade.getMailEngine().send(message);
 		} catch (MailException me) {
-			 //getSession().setAttribute("error", me.getCause().getLocalizedMessage());
-			 addError(me.getCause().getLocalizedMessage(), false);
+			addFlash(me.getCause().getLocalizedMessage(), Type.FAILURE);
 		}
 	}
 }

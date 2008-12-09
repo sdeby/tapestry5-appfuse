@@ -4,9 +4,8 @@ import org.apache.tapestry5.Asset;
 import org.apache.tapestry5.ComponentResources;
 import org.apache.tapestry5.annotations.Path;
 import org.apache.tapestry5.annotations.Property;
-import org.apache.tapestry5.ioc.Messages;
 import org.apache.tapestry5.ioc.annotations.Inject;
-import org.appfuse.webapp.util.MessageUtil;
+import org.appfuse.webapp.base.BasePage;
 
 /**
  * Page to be displayed whenever a page is not found (404 error)
@@ -15,23 +14,19 @@ import org.appfuse.webapp.util.MessageUtil;
  * @version $Id$
  *
  */
-public class NotFound {
+public class NotFound extends BasePage {
 
 	@Property
 	@Inject
 	@Path("context:images/404.jpg")
 	private Asset notFoundImage;
 	
-	@Inject 
-	private Messages messages;
-	
 	@Inject
 	private ComponentResources resources;
 	
 	public String getNotFoundMessage() {
-		String message = MessageUtil.convert(messages.get("404.message"));
 		String url = resources.createPageLink("MainMenu", false).toURI();
-		return String.format(message, url);
+		return getText("404.message", url);
 	}
 	
 	

@@ -9,7 +9,7 @@ import org.apache.tapestry5.annotations.Property;
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.apache.tapestry5.services.Context;
 import org.apache.tapestry5.services.Request;
-import org.slf4j.Logger;
+import org.appfuse.webapp.base.BasePage;
 
 import com.opensymphony.clickstream.Clickstream;
 import com.opensymphony.clickstream.ClickstreamRequest;
@@ -20,12 +20,9 @@ import com.opensymphony.clickstream.ClickstreamRequest;
  * @version $Id$
  *
  */
-public class ViewStream {
+public class ViewStream extends BasePage {
 
 	private static final String NULL_STRING = "null";
-	
-	@Inject
-	private Logger logger;
 	
 	@Inject 
 	private Request request;
@@ -44,27 +41,28 @@ public class ViewStream {
 	@Property
 	private int index;
 
-	
-	void onActivate(String sid) {
-		if (sid == null) {
-			logger.debug("Null sid in onActivate()");
-		}
-		sessionid = sid;		 
-	}
+
 	
 	String onPassivate() {
 		return sessionid; 
+	}
+
+	void onActivate(String sid) {
+		if (sid == null) {
+			getLogger().debug("Null sid in onActivate()");
+		}
+		sessionid = sid;		 
 	}
 	
 	@SuppressWarnings("unchecked")
 	void setupRender() {		
 		Map<String,Clickstream> clickstreams = (Map<String,Clickstream>) context.getAttribute("clickstreams");
 			if (clickstreams != null) {
-				logger.debug("Found clickstreams object in context");
+				getLogger().debug("Found clickstreams object in context");
 				stream = clickstreams.get(sessionid);
 			}
 			else {
-				logger.debug("Null clickstreams object in context");
+				getLogger().debug("Null clickstreams object in context");
 			}	
 	}
 	
@@ -105,7 +103,6 @@ public class ViewStream {
 	}
 	
 	public int getStreamSize() {
-		List list = stream.getStream();
 		return  stream != null ? stream.getStream().size() : 0;
 	}
 	

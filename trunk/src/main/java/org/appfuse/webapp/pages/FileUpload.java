@@ -1,24 +1,20 @@
 package org.appfuse.webapp.pages;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
-import org.apache.tapestry5.ComponentResources;
-import org.apache.tapestry5.annotations.InjectPage;
-import org.apache.tapestry5.annotations.Persist;
-import org.apache.tapestry5.annotations.Property;
+import org.apache.commons.fileupload.FileUploadException;
 import org.apache.tapestry5.annotations.Component;
+import org.apache.tapestry5.annotations.InjectPage;
+import org.apache.tapestry5.annotations.Property;
+import org.apache.tapestry5.corelib.components.EventLink;
 import org.apache.tapestry5.ioc.annotations.Inject;
+import org.apache.tapestry5.services.ApplicationGlobals;
 import org.apache.tapestry5.services.Context;
 import org.apache.tapestry5.services.Request;
 import org.apache.tapestry5.upload.services.UploadedFile;
-import org.apache.tapestry5.corelib.components.EventLink;
 import org.appfuse.Constants;
 import org.appfuse.webapp.base.BasePage;
-import org.slf4j.Logger;
+import org.appfuse.webapp.data.FlashMessage.Type;
 
 /**
 * This class handles the uploading of a file and writing it to
@@ -31,10 +27,6 @@ import org.slf4j.Logger;
 */
 public  class FileUpload extends BasePage {
 	
-
-	@Inject
-	private Logger logger;
-
 	@Property
 	private UploadedFile file;
 	
@@ -52,18 +44,15 @@ public  class FileUpload extends BasePage {
 	private Context context;
 	
 	@Inject
-	private ComponentResources resources;
+	private ApplicationGlobals globals;
 	
-
 	@Component(parameters={"event=cancel"})
 	private EventLink cancel;
 
-	
 	Object onCancel() {
-        logger.debug("entered 'cancel' method");
+        getLogger().debug("entered 'cancel' method");
 		return MainMenu.class;
 	}
-
  
      Object onSuccess() {
         
@@ -71,9 +60,10 @@ public  class FileUpload extends BasePage {
             return null;
         }
         
+        
         // write the file to the filesystem the directory to upload to
         String uploadDir =
-            getServletContext().getRealPath("/resources") + "/" +
+        	globals.getServletContext().getRealPath("/resources") + "/" +
             getRequest().getRemoteUser() + "/";
 
        
@@ -94,5 +84,14 @@ public  class FileUpload extends BasePage {
  
         return fileDisplay.initialize(file, name, path, url);        
     }
+     
+     
+     Object onUploadException(FileUploadException exception) {
+         getLogger().error("Upload exception: {} ", exception.getMessage());
+         String flashMsg = getText("maxLengthExceeded");
+         addFlash(flashMsg, Type.FAILURE);
+         return this;
+     }
+
     
 }

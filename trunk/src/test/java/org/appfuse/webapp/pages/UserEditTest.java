@@ -6,8 +6,10 @@ import java.util.Map;
 //import org.apache.tapestry5.engine.ILink;
 import org.appfuse.model.User;
 import org.appfuse.service.UserManager;
+import org.appfuse.webapp.base.BasePageTestCase;
+import org.appfuse.webapp.base.BasePageTester;
 
-public class UserEditTest extends  BasePageTester {
+public class UserEditTest extends  BasePageTestCase {
 	// TODO: Rewrite test case using Tapestry5 built-in features
 //    private UserEdit page;
 //

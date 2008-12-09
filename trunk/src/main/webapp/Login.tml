@@ -1,5 +1,5 @@
 <t:layout title="message:login.title" heading="message:login.heading"
-	menu="literal:AdminMenu" bodyId="login"
+	menu="literal:AdminMenu" bodyId="login" flash="flashMessage"
 	xmlns:t="http://tapestry.apache.org/schema/tapestry_5_0_0.xsd">
 
 	<form method="post" id="loginForm" action="${springSecurityUrl}"

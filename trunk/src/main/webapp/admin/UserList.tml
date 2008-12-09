@@ -1,25 +1,22 @@
 <t:layout title="message:userList.title"
 	heading="message:userList.heading" menu="literal:AdminMenu"
+	flash="flashMessage"
 	xmlns:t="http://tapestry.apache.org/schema/tapestry_5_0_0.xsd">
 
-	<t:messagebanner t:id="message" type="type"/>
 	<p>
 	
 		<t:eventlink t:id="addTop">
 			<input type="button" class="button"
 				value="${message:button.add}" />
-		</t:eventlink>
+		</t:eventlink>			
 		<t:eventlink t:id="doneTop">
 			<input type="button" class="button"
 				value="${message:button.done}" />
 		</t:eventlink>
-
-
 	</p>
 
-
 	<t:grid source="users" row="user" model="model"
-		reorder="username,fullname,email,enabled" t:id="userList">
+		reorder="username,fullname,email,enabled" id="userList">
 		<t:parameter name="usernamecell">
 			<t:actionlink t:id="edit" context="user.id">
 				${user.username}

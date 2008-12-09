@@ -5,10 +5,11 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.tapestry5.ComponentResources;
 import org.apache.tapestry5.annotations.Component;
+import org.apache.tapestry5.annotations.InjectPage;
 import org.apache.tapestry5.annotations.Persist;
 import org.apache.tapestry5.annotations.Property;
-import org.apache.tapestry5.ioc.Messages;
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.apache.tapestry5.services.Request;
 import org.apache.tapestry5.services.Response;
@@ -17,9 +18,9 @@ import org.appfuse.model.User;
 import org.appfuse.service.UserExistsException;
 import org.appfuse.webapp.base.BasePage;
 import org.appfuse.webapp.components.UserForm;
+import org.appfuse.webapp.data.FlashMessage.Type;
 import org.appfuse.webapp.services.ServiceFacade;
 import org.appfuse.webapp.util.RequestUtil;
-import org.slf4j.Logger;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.AccessDeniedException;
@@ -35,29 +36,34 @@ import org.springframework.security.providers.UsernamePasswordAuthenticationToke
  * 
  */
 public class Signup extends BasePage {
-	@Inject
-	private Logger logger;
 
 	@Inject
 	private ServiceFacade serviceFacade;
 
-	@Property
 	@Persist
+	@Property
 	private User user;
-
 
 	@Inject
 	private Request request;
-
+	
+	@Inject
+	private ComponentResources resources;
+	
+	@InjectPage
+	private MainMenu mainMenu;
+	
 	@Inject
 	private Response response;
 
-	@Inject
-	private Messages messages;
-
+	
 	@Component(id = "signup")
 	private UserForm form;
 
+	
+	private String flashMsg = null;
+	
+	
 	void beginRender() {
 		if (user == null) {
 			user = new User();
@@ -67,24 +73,24 @@ public class Signup extends BasePage {
 	// ~ Event Handlers
 
 	Object onCancel() {
-		if (logger.isDebugEnabled()) {
-			logger.debug("entered cancel method");
+		if (getLogger().isDebugEnabled()) {
+			getLogger().debug("entered cancel method");
 		}
 		return Login.class;
 	}
 
 	void onValidateForm() {
 		// make sure the password fields match
-		if (!StringUtils.equals(user.getPassword(), user.getConfirmPassword())) {
-			addError(form.getForm(), form.getConfirmPasswordField(),
-					"errors.twofields", true,
-					getMessageText("user.confirmPassword"),
-					getMessageText("user.password"));
+		if (!StringUtils.equals(user.getPassword(), user.getConfirmPassword())) {			
+			flashMsg = getText("errors.twofields", 
+					getText("user.confirmPassword"), getText("user.password"));
+			addFlash(flashMsg, Type.FAILURE);
+			form.recordError(form.getConfirmPasswordField(), flashMsg);
 		}
 	}
 
 	Object onSuccess() throws IOException {
-		logger.debug("entered save method");
+		getLogger().debug("entered save method");
 
 		// Enable user;
 		user.setEnabled(true);
@@ -95,34 +101,34 @@ public class Signup extends BasePage {
 
 		try {
 			user = serviceFacade.getUserManager().saveUser(user);
-		} catch (AccessDeniedException ade) {
+		} 
+		catch (AccessDeniedException ade) {
 			// thrown by UserSecurityAdvice configured in aop:advisor
 			// userManagerSecurity
-			logger.warn(ade.getMessage());
-			getResponse().sendError(HttpServletResponse.SC_FORBIDDEN);
+			getLogger().warn(ade.getMessage());
+			response.sendError(HttpServletResponse.SC_FORBIDDEN, null);
 			return null; // FIXME
-		} catch (UserExistsException e) {
-			// addError("usernameField",
-			// getMessages().format("errors.existing.user", user.getUsername(),
-			// user.getEmail()), ValidationConstraint.CONSISTENCY);
+		} 
+		catch (UserExistsException e) {		
+			flashMsg = getText("errors.existing.user", 
+					                   user.getUsername(), user.getEmail());
+			addFlash(flashMsg, Type.FAILURE);
+			form.recordError(form.getUsernameField(), flashMsg);
+			
 			// redisplay the unencrypted passwords
 			user.setPassword(user.getConfirmPassword());
-			return null; // FIXME
+			return null; 
 		}
-
-		getSession().setAttribute(Constants.REGISTERED, Boolean.TRUE);
-
+		
 		// log user in automatically
 		UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-				user.getUsername(), user.getConfirmPassword(), user
-						.getAuthorities());
+				user.getUsername(), user.getConfirmPassword(), user.getAuthorities());
 		auth.setDetails(user);
 		SecurityContextHolder.getContext().setAuthentication(auth);
 
 		// Send user an e-mail
-		if (logger.isDebugEnabled()) {
-			logger.debug("Sending user '" + user.getUsername()
-					+ "' an account information e-mail");
+		if (getLogger().isDebugEnabled()) {
+			getLogger().debug("Sending user '{}' an account information e-mail", user.getUsername());
 		}
 
 		SimpleMailMessage message = serviceFacade.getMailMessage();
@@ -142,12 +148,18 @@ public class Signup extends BasePage {
 		try {
 			serviceFacade.getMailEngine().send(message);
 		} catch (MailException me) {
-			getSession().setAttribute("error",
-					me.getMostSpecificCause().getMessage());
+			addFlash(me.getMostSpecificCause().getMessage(), Type.FAILURE);
+			//return null;
 		}
 
-		getSession().setAttribute("message", getText("user.registered"));
-		response.sendRedirect(getRequest().getContextPath());
+		flashMsg = getText("user.registered");
+		mainMenu.addFlash(flashMsg, Type.SUCCESS);
+		//response.sendRedirect(resources.createPageLink("mainmenu", false).toAbsoluteURI());
+		
+		// Use Link to make PageTester happy :)
+		response.sendRedirect(resources.createPageLink("mainmenu", false));
+		
 		return null;
 	}
+	
 }

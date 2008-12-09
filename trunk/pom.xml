@@ -6,7 +6,7 @@
     <groupId>org.appfuse</groupId>
     <artifactId>t5-appfuse-demo</artifactId>
     <packaging>war</packaging>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <name>AppFuse Tapestry 5 Application</name>
     <url>http://www.mycompany.com</url>
 
@@ -476,7 +476,7 @@
             <groupId>org.apache.tapestry</groupId>
             <artifactId>tapestry-test</artifactId>
             <version>${tapestry.version}</version>
-            <scope>test</scope>
+            <scope>test</scope>         
         </dependency>
         
         <dependency>
@@ -959,6 +959,7 @@
         <cargo.wait>false</cargo.wait>
                 
         <!-- Database settings -->
+
         <dbunit.dataTypeFactoryName>org.dbunit.dataset.datatype.DefaultDataTypeFactory</dbunit.dataTypeFactoryName>
         <dbunit.operation.type>CLEAN_INSERT</dbunit.operation.type>
         <hibernate.dialect>org.hibernate.dialect.MySQL5InnoDBDialect</hibernate.dialect>
@@ -969,7 +970,7 @@
         <jdbc.url><![CDATA[jdbc:mysql://localhost/t5_appfuse?createDatabaseIfNotExist=true&amp;useUnicode=true&amp;characterEncoding=utf-8]]></jdbc.url>
         <jdbc.username>root</jdbc.username>
         <jdbc.password></jdbc.password>
-    
+                
         <!-- Properties calculated by AppFuse when running full-source plugin -->
         <aspectj.version>1.6.0</aspectj.version>
         <clickstream.version>1.0.2</clickstream.version>
@@ -990,7 +991,7 @@
         <spring.security.version>2.0.2</spring.security.version>
         <struts.menu.version>2.4.3</struts.menu.version>
         <tacos.version>4.1.1</tacos.version>
-        <tapestry.version>5.0.14</tapestry.version>
+        <tapestry.version>5.0.18</tapestry.version>
         <urlrewrite.version>3.0.4</urlrewrite.version>
         <velocity.version>1.4</velocity.version>
         <xfire.version>1.2.6</xfire.version>
