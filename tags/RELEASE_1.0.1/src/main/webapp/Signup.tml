@@ -1,0 +1,11 @@
+<t:layout title="message:signup.title" heading="message:signup.heading"
+	flash="flashMessage" xmlns:t="http://tapestry.apache.org/schema/tapestry_5_0_0.xsd">
+	
+	<div class="separator"></div>
+	
+	<t:userform t:id="signup" 
+	            user="user" 
+	            signup="true"
+		        clientValidation="false" 
+		        submitLabel="${message:button.register}" />
+</t:layout>

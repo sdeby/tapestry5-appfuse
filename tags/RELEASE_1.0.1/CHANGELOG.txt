@@ -1,0 +1,25 @@
+Version 1.0.1
+=============
+
+ * Upgrade to Tapestry version 5.0.18
+ * Added email validator in UserForm component 
+ * Remove @Persist annotation in UserEdit page to avoid unecessary sessions and fixed rememberMe feature 
+ * Use activation/passivation mechanism for more "Restful" URLs 
+ * PasswordHint Page: Cleanup use of sessions
+ * UserList: Updated Grid id 
+ * Update application module to limit file size to 2GB and FileUpload Page accordingly
+ * Fixed ValidationDelegate class to colorized fields in error similar to Tapestry4 version
+ * MainMenu: Clicking on "Edit Profile" top link resulted in an exception
+ * UserForm component: Fixed cookieLogin
+
+
+Known Bugs
+----------
+ * Email validator not using application messages catalog (update message catalog or enhance email validator)
+ * Grid with zebra stripes and javascript not yet implemented
+ * 404/503 pages redirect not properly working
+
+
+Version 1.0.0
+=============
+Initial release

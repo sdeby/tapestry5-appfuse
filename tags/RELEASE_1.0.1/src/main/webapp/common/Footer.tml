@@ -1,0 +1,15 @@
+<t:container xmlns:t="http://tapestry.apache.org/schema/tapestry_5_0_0.xsd">
+    <div id="divider"><div></div></div>
+    <span class="left">${message:webapp.version}</span> |
+        <span id="validators">
+            <a href="http://validator.w3.org/check?uri=referer">XHTML Valid</a> |
+            <a href="http://jigsaw.w3.org/css-validator/validator-uri.html">CSS Valid</a>
+        </span>
+<!--        <t:if test="${pageContext.request.remoteUser != null}">-->
+<!--        | ${message:user.status} ${pageContext.request.remoteUser}-->
+<!--        </t:if>-->
+    </span>
+    <span class="right">
+        &copy; ${message:copyright.year} <a href="${message:company.url}">${message:company.name}</a>
+    </span>
+</t:container>
