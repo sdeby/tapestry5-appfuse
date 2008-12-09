@@ -6,7 +6,7 @@
     <groupId>org.appfuse</groupId>
     <artifactId>t5-appfuse-demo</artifactId>
     <packaging>war</packaging>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.1</version>
     <name>AppFuse Tapestry 5 Application</name>
     <url>http://www.mycompany.com</url>
 
