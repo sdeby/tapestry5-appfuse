@@ -31,7 +31,7 @@ mvn jetty:run-war -Phsqldb
 NOTE: We are using HSQLDB as database.
 
 If everything goes well, fire up a browser and point it at this URL: http://localhost:8080
-Login as admin/***** and click around to ensure the Tapestry 4 version is fully functional.
+Login as admin/admin and click around to ensure the Tapestry 4 version is fully functional.
 
 Assuming all went well, we are now ready to start the upgrade to Tapestry 5.
 
@@ -82,7 +82,7 @@ Edit the pom.xml and remove all the tapestry 4 dependencies and add Tapestry 5 e
         </dependency>
              ...
        <web.framework>tapestry5</web.framework>
-       <tapestry.version>5.0.14</tapestry.version>
+       <tapestry.version>5.0.18</tapestry.version>
          [snip]
 }}}
 
@@ -127,10 +127,203 @@ We will end up with the following structure:
 || *Desc.* || *Path* ||
 ||Pages || src/main/java/org/appfuse/webapp/pages||
 ||Components|| src/main/java/org/appfuse/webapp/components||
+||Abstract Pages or Components* || src/main/java/org/appfuse/webapp/base||
 ||Mixins|| src/main/java/org/appfuse/webapp/mixins||
 ||Services|| src/main/java/org/appfuse/webapp/services||
 ||Page Templates|| src/main/webapp/ or src/main/webapp/admin ||
 ||Component Templates|| src/main/resources/org/appfuse/webapp/components||
 
+NOTE: Using the base directory for abstract pages or component is not a requirement. However, make sure they are NOT under the pages or components directories because
+Tapestry will attempt to enhance classes under the pages, compoents and mixins directories.
+
+
+=== Services ===
+
+====Package: org.appfuse.webapp.services====
+  
+   * _AppModule (New)_
+  Standard Tapestry configuration module based on the filter name (app)
+ 
+   * _ServiceFacade (New)_
+  New interface encapsulating all Spring Managers and useful service calls
+ 
+   * _ServiceFacadeImpl (New)_
+  Implementation of the ServiceFacade interface
+
+   * _ValidationDelegate (New)_
+  New validation decorator to mimic T4/Dojo validation integration. This replaces the org.appfuse.webapp.ValidationDelegate
+
+=== Pages ===
+
+====Package: org.appfuse.webapp.pages.base====
+
+   * _BasePage_
+  This class was moved from org.appfuse.webapp.pages since it's not a page. In addition, some changes were made to leverage Java 5 features and handle the message catalog.
+
+====Package: org.appfuse.webapp.pages====
+
+===== General =====
+
+ The following steps were systematically applied to all pages:
+
+   * transform this class into a non-abstract class first and remove all dependencies
+   * Replace Spring managers with  "ServiceFacade" service, a wrapper around all injected managers
+   * Add private properties and accessors to Java class if previously defined in page spec file
+   * For page navigation, inject page, set properties and return page
+   * For event handlers, we use naming convention. This can easily be replaced by annotations if you prefer.
+
+
+===== Details =====
+Here is quick summary of each page update. The pages are listed in alphabetical order.
+
+    * _AccessDenied_  (New Class) 
+    This new class was introduced to handle 403 errors
+
+    * _Error_  (New Class) 
+    This class implements the ExceptionReport interface to easily overwrite the default Tapestry exception report page
+
+    * _FileDisplay_
+      This page now uses the new tapestry-upload module. The general steps listed above were applied
+
+    * _FileUpload_
+      Steps similar to the FileDisplay class  were applied 
+
+The event handler methods are updated according to the table below. Please note that we could have also used the @OnEvent annotation, but we decided to use naming convention over configuration instead.
+
+Inject Page
+||Tapestry 4 ||Tapestry 5 (no annotations) ||
+||void cancel() ||Object onCancel() ||
+||void upload(IRequestCycle) ||Object onSuccess() ||
+
+    * _Index_  (New Class) 
+    This is the general index page and is used to redirect the request to the proper page 
+
+    * _Login_  (New Class) 
+    This class replaces the login.jsp page
+
+    * _Logout_  (New Class) 
+    This class replaces the logout.jsp page
+
+    * _MainMenu_
+
+Inject Page and ServiceFacade
+||Tapestry 4 ||Tapestry 5 ||
+||void editProfile() ||Object onActionFromEditProfile() ||
+
+    * _NotFound_  (New Class) 
+    This class handles 401 errors
+
+
+    * _PasswordHint_
+
+  . Inject Page and ServiceFacade
+
+||Tapestry 4 ||Tapestry 5 ||
+||void pageBeginRender(PageEvent) ||void beginRender() ||
+||void execute() ||Object onActivate(String) ||
+
+
+  *  _SignupForm_ (Renamed)
+
+  - This class was renamed to Signup.
+I initially planned to do minimal changes to the pages, however as time went on, I thought It would be better to update 
+these to be embrace Tapestry naming convention and be more consistent throughout the application.
+
+  * _UserForm_ (Renamed)
+
+  This class was renamed to UserEdit.
+
+ Convert listeners to event handler methods.
+||Tapestry 4 ||Tapestry 5 ||
+||void pageBeginRender(PageEvent) ||void beginRender() ||
+||void cancel() ||Object onCancel() ||
+||void save(IRequestCycle) ||void onPrepare() / Object onSuccess() / void onValidateForm() ||
+||void delete(IRequestCycle) ||void onSelected() / Object onDelete() ||
+
+
+ 
+  * ~~_MockPageService_~~
+  Deleted. No longer needed
+
+  * ~~_MockRequestCycle_~~
+  Deleted. No longer needed
+
+  * ~~_CountryModel_~~ and ~~_OptionsModel_~~
+  These are not page artifacts, therefore don't belong to the pages package.
+In fact, both classes were no longer needed and were therefore deleted.
+The "ServiceFacade" interface contains methods to handle the labels.
+
+
+====Package: org.appfuse.webapp.pages.admin====
+
+  * _ActiveUsers_ (New)
+
+  * _ClickStreams_ (New)
+  
+  * _Reload_
+Inject MainMenu page and ComponentResources to generate Links
+||Tapestry 4 ||Tapestry 5 ||
+||void execute(IRequestCycle) ||Object onActivate() ||
+
+  * _UserList_
+  Inject UserEdit page
+
+||Tapestry 4 ||Tapestry 5 ||
+||void edit(IRequestCycle) ||Object onActionFromEdit(long id) ||
+
+  * _ViewStream_ (New) 
+ 
+
+=== Components ===
+
+====Package: org.appfuse.webapp.components====
+
+   When tackling T4 components (jwc + page), follow these steps:
+    * create Java class if does not exist
+    * Replace properties with private instances in Java class
+    * Use injection or parameters whenever necessary
+
+Below are the changes in alphabetical order:
+
+   * _CheckboxSelect_ (New)
+     This will replace the  CheckBoxMultiplePropertySelectionRenderer
+
+   * _HashedPasswordField_ (New)
+    The standard password component doesn't allow displaying the values. Since the values are encrypted, we can safely modify the original component to fit our need.
+
+ 
+  * _Layout_ (New)
+     Wrapper for look and feel. 
+ 
+  * _Flash_ (New)
+    This component adds a "flash" message in the layout component.
+
+  * _ShowError_ (New)     
+    These is based on the T4 jwc and page template.
+
+  * _ShowMessage_ (New)
+    These is based on the T4 jwc and page template.
+
+  * _ShowValidationMessage_ (New)
+    These is based on the T4 jwc and page template.
+
+
+   * _UserForm_  
+      There were lot of similarities between the original SignupForm and UserForm pages. 
+  This component was introduce to encapsulate all common features (DRY)
+
+
+   * ~~_FieldLabel_~~
+   Deleted. replaced by Label component in T5
+
+  
+   * ~~_CheckBoxMultiplePropertySelectionRenderer_~~
+   Deleted.
+
+   * ~~_HiddenMultiplePropertySelectionRenderer_~~
+   Deleted
+
+   * ~~_ValidationDelegate_~~
+   Deleted. This is not a component and is replaced by the validation decorator.   
 
  === More to come... ===
