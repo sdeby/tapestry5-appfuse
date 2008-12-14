@@ -340,7 +340,7 @@ Below are the changes in alphabetical order:
      Wrapper around flash display text and type
 
     * Visit (Renamed)
-   . ASO Visit renamed UserSession (the name "Visit" was use for historical reasons - Tapestry 3)
+   . ASO Visit renamed UserSession (the name "Visit" was used for historical reasons i.e. Tapestry 3)
 
 === Package: org.appfuse.webapp.util ===
       
