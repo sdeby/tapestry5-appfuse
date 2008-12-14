@@ -117,9 +117,9 @@ Here are the main changes:
 
 We also removed all jsp referenced in the web.xml. 
 
-== A Little Bit More Work: Pages & Components Classes ==
+= A Little Bit More Work: Pages & Components Classes =
 
-=== First, Let's Re-org! ===
+== First, Let's Re-org! ==
 We need to clean-up and refactor a little bit to adhere to Tapestry 5 project layout 
 as defined [http://tapestry.apache.org/tapestry5/guide/project-layout.html here].
 We will end up with the following structure:
@@ -137,13 +137,16 @@ NOTE: Using the base directory for abstract pages or component is not a requirem
 Tapestry will attempt to enhance classes under the pages, compoents and mixins directories.
 
 
-=== Services ===
+== Services ==
 
-====Package: org.appfuse.webapp.services====
+===Package: org.appfuse.webapp.services===
   
    * _AppModule (New)_
   Standard Tapestry configuration module based on the filter name (app)
- 
+  
+ In order to reuse existing code, we override the default location of the message catalog 
+ by contributing to the application default parameter with the following parameter: *SymbolConstants.APPLICATION_CATALOG*
+
    * _ServiceFacade (New)_
   New interface encapsulating all Spring Managers and useful service calls
  
@@ -153,16 +156,16 @@ Tapestry will attempt to enhance classes under the pages, compoents and mixins d
    * _ValidationDelegate (New)_
   New validation decorator to mimic T4/Dojo validation integration. This replaces the org.appfuse.webapp.ValidationDelegate
 
-=== Pages ===
+== Pages ==
 
-====Package: org.appfuse.webapp.pages.base====
+===Package: org.appfuse.webapp.pages.base===
 
    * _BasePage_
   This class was moved from org.appfuse.webapp.pages since it's not a page. In addition, some changes were made to leverage Java 5 features and handle the message catalog.
 
-====Package: org.appfuse.webapp.pages====
+===Package: org.appfuse.webapp.pages===
 
-===== General =====
+==== General ====
 
  The following steps were systematically applied to all pages:
 
@@ -173,7 +176,7 @@ Tapestry will attempt to enhance classes under the pages, compoents and mixins d
    * For event handlers, we use naming convention. This can easily be replaced by annotations if you prefer.
 
 
-===== Details =====
+==== Details ====
 Here is quick summary of each page update. The pages are listed in alphabetical order.
 
     * _AccessDenied_  (New Class) 
@@ -254,7 +257,7 @@ In fact, both classes were no longer needed and were therefore deleted.
 The "ServiceFacade" interface contains methods to handle the labels.
 
 
-====Package: org.appfuse.webapp.pages.admin====
+===Package: org.appfuse.webapp.pages.admin===
 
   * _ActiveUsers_ (New)
 
@@ -274,9 +277,9 @@ Inject MainMenu page and ComponentResources to generate Links
   * _ViewStream_ (New) 
  
 
-=== Components ===
+== Components ==
 
-====Package: org.appfuse.webapp.components====
+===Package: org.appfuse.webapp.components===
 
    When tackling T4 components (jwc + page), follow these steps:
     * create Java class if does not exist
@@ -326,4 +329,98 @@ Below are the changes in alphabetical order:
    * ~~_ValidationDelegate_~~
    Deleted. This is not a component and is replaced by the validation decorator.   
 
- === More to come... ===
+== Misc. ==
+
+ 
+=== Package: org.appfuse.webapp.data ===
+   * FileData (New)
+     Wrapper around properties used in FileUpload and FileDisplay classes
+
+  * FlashMessage (New)
+     Wrapper around flash display text and type
+
+    * Visit (Renamed)
+   . ASO Visit renamed UserSession (the name "Visit" was use for historical reasons - Tapestry 3)
+
+=== Package: org.appfuse.webapp.util ===
+      
+      MessageUtil
+       Utility class to convert from MessageFormat to String.format
+
+
+
+= Getting Your Hands Dirty: Templates and Resources =
+
+== Page templates ==
+  * Move page templates to 
+{{{
+<ROOT>/src/main/webapp
+}}}
+or
+{{{
+<ROOT>/src/main/resources/org/appfuse/webapp/pages
+}}}
+ 
+
+  * Wrap all page templates with layout component 
+
+   {{{
+   <t:layout xmlns:t="http://tapestry.apache.org/schema/tapestry_5_0_0.xsd">
+    ...
+
+   </t:layout>
+   }}}
+== Component Templates ==
+  * Move component templates to
+   {{{
+    <ROOT>/src/main/resources/org/appfuse/webapp/components
+   }}}
+  * Wrap all templates with tapestry namespace
+   {{{
+   <html xmlns:t="http://tapestry.apache.org/schema/tapestry_5_0_0.xsd">
+   <head>
+     ...
+   </head>
+    <t:body>
+       ....
+    </t:body>
+   </html>
+   }}}
+
+  * Main changes
+    # {{{ognl:}}} prefix replace by default prop: (in general)
+    # {{{<span key="value"/>}}} idiom replaced by ${message:value}
+    # @Any removed and replaced by value expansion
+    # @Insert replaced by expansion
+    # @TextField replaced by <t:textfield>
+    # @Body replaced by <t:body>
+    # @DirectLink replaced by <t:actionlink> or <t:eventlink> 
+    # @PageLink replaced by <t:pagelink>
+    # @If replaced by <t:if>
+    # @FieldLabel replaced by <t:label>
+    # jwcid="@Label" removed
+    # File uploads are handled by a form enclosing a <t:upload>: We are using the tapestry-upload module for this.
+    #listener are replaced by t:id and event handler in component class
+
+
+== Spring Security ==
+
+  * Update Spring Security file to reference new pages
+{{{
+<ROOT>/src/main/webapp/WEB-INF/security.xml
+}}}
+
+== Resources ==
+
+ . The resource files are typically named after the filter name and located under WEB-INF. For example,  *app`*`.properties*
+In order to re-use the existing configuration, we can specify application.catalog in the AppModule. 
+
+*NOTE: In future versions, the resources files will be renamed to enforce convention over configuration.*
+
+ 
+== Unit Testing (More to come...) ==
+
+
+
+
+The final source code can be found here http://code.google.com/p/tapestry5-appfuse/
